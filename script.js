@@ -1,4 +1,4 @@
-// --- DADOS FICTÍCIOS ---
+
 const USUARIO_FIXO = {
     usuario: 'admin',
     senha: 'admin',
@@ -6,7 +6,6 @@ const USUARIO_FIXO = {
 };
 let isLoggedIn = false;
 
-// Dados dos Imóveis (Usei URLs externas para facilitar o teste sem precisar de pasta 'assets')
 const DADOS_IMOVEIS = [
     { id: 1, titulo: 'Casa Aconchegante na Serra', tipo: 'residencial', valorDiaria: 350, localizacao: 'Gramado, RS', descricao: 'Chalé com lareira e vista panorâmica.', imagem: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
     { id: 2, titulo: 'Apartamento Corporativo Luxo', tipo: 'corporativo', valorDiaria: 450, localizacao: 'Berrini, SP', descricao: 'Próximo a centros empresariais. Ideal para executivos.', imagem: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
@@ -16,44 +15,70 @@ const DADOS_IMOVEIS = [
     { id: 6, titulo: 'Studio Executivo', tipo: 'corporativo', valorDiaria: 220, localizacao: 'Brasília, DF', descricao: 'Prático para viagens de negócios rápidas.', imagem: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
 ];
 
-// Dados de Reservas (Inicia vazio ou com simulações)
 let DADOS_RESERVAS = [];
 
-// --- ELEMENTOS DO DOM ---
+
 const imoveisGrid = document.getElementById('imoveis-grid');
 const modalLogin = document.getElementById('modal-login');
 const modalReserva = document.getElementById('modal-reserva');
 const modalVisualizarReservas = document.getElementById('modal-visualizar-reservas');
 const formLogin = document.getElementById('form-login');
+const formBusca = document.getElementById('form-busca'); // Referência do formulário de busca
 const btnLogout = document.getElementById('btn-logout');
 const btnMenu = document.getElementById('btn-menu-hamburguer');
 const btnReservasCadastradas = document.getElementById('btn-reservas-cadastradas');
-const formBusca = document.getElementById('form-busca');
-const btnBuscar = document.getElementById('btn-buscar');
+const formRegistroReserva = document.getElementById('form-registro-reserva');
+const msgLoginReserva = document.getElementById('msg-login-reserva');
+const msgErroReserva = document.getElementById('msg-erro-reserva');
+const inputCheckIn = document.getElementById('reserva-data-checkin');
+const inputCheckOut = document.getElementById('reserva-data-checkout');
+
 
 let imovelSelecionadoId = null;
 
-// --- CONTROLE DE MODAIS ---
+
 function openModal(modal) { modal.style.display = 'block'; }
 function closeModal(modal) { modal.style.display = 'none'; }
 
-// Fecha modais ao clicar no 'X'
+
 document.querySelectorAll('.close-button').forEach(button => {
     button.onclick = function() { closeModal(this.closest('.modal')); }
 });
 
-// Fecha modais ao clicar fora
+
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) { closeModal(event.target); }
 }
 
-// NOVO: Função para transicionar da Reserva para o Login
+
 function irParaLogin() {
     closeModal(modalReserva); 
     openModal(modalLogin);
 }
 
-// --- FUNÇÕES PRINCIPAIS ---
+
+function updateUIForLoginState() {
+    const initial = isLoggedIn ? USUARIO_FIXO.nome.charAt(0).toUpperCase() : '';
+    
+    
+    btnMenu.innerHTML = isLoggedIn
+        ? `<div class="avatar-circle">${initial}</div>`
+        : '<span class="icon-line"></span><span class="icon-line"></span><span class="icon-line"></span>';
+    
+    btnMenu.className = isLoggedIn ? 'user-avatar' : 'menu-hamburguer';
+    
+    
+    formLogin.style.display = isLoggedIn ? 'none' : 'block';
+    btnLogout.style.display = isLoggedIn ? 'block' : 'none';
+
+   
+    if (modalReserva.style.display === 'block') {
+        abrirModalReserva(imovelSelecionadoId, false); 
+    }
+}
+
+
+
 
 function renderImoveis(imoveis) {
     imoveisGrid.innerHTML = ''; 
@@ -87,18 +112,7 @@ function handleLogin(event) {
     if (usuarioInput === USUARIO_FIXO.usuario && senhaInput === USUARIO_FIXO.senha) {
         isLoggedIn = true;
         closeModal(modalLogin);
-        
-        formLogin.style.display = 'none';
-        btnLogout.style.display = 'block';
-        
-        const inicial = USUARIO_FIXO.nome.charAt(0).toUpperCase();
-        btnMenu.innerHTML = `<div class="avatar-circle">${inicial}</div>`;
-        btnMenu.className = 'user-avatar';
-        
-        if(modalReserva.style.display === 'block') {
-             // Se o modal de reserva estava aberto, atualiza para mostrar o form
-            abrirModalReserva(imovelSelecionadoId); 
-        }
+        updateUIForLoginState(); 
     } else {
         alert('Credenciais inválidas. Tente: admin / admin');
     }
@@ -107,14 +121,8 @@ function handleLogin(event) {
 function handleLogout() {
     isLoggedIn = false;
     closeModal(modalLogin);
-    
-    formLogin.style.display = 'block';
-    btnLogout.style.display = 'none';
     formLogin.reset();
-    
-    btnMenu.innerHTML = '<span class="icon-line"></span><span class="icon-line"></span><span class="icon-line"></span>';
-    btnMenu.className = 'menu-hamburguer';
-
+    updateUIForLoginState(); 
     alert('Você saiu da conta.');
 }
 
@@ -128,20 +136,13 @@ function abrirModalReserva(id) {
     document.getElementById('reserva-detalhes').innerHTML = `
         <p style="color: #555; margin-bottom: 10px;">${imovel.localizacao} • ${imovel.tipo.charAt(0).toUpperCase() + imovel.tipo.slice(1)}</p>
         <p>${imovel.descricao}</p>
-        <h3 style="margin-top: 15px;">R$${imovel.valorDiaria.toFixed(2)} <span style="font-size: 0.8em; font-weight: normal">por noite</span></h3>
+        <h3 style="margin-top: 15px;">R$${imovel.valorDiaria} <span style="font-size: 0.8em; font-weight: normal">por noite</span></h3>
     `;
 
-    const formReserva = document.getElementById('form-registro-reserva');
-    const msgLogin = document.getElementById('msg-login-reserva');
-    document.getElementById('msg-erro-reserva').textContent = '';
-
-    if (isLoggedIn) {
-        formReserva.style.display = 'block';
-        msgLogin.style.display = 'none';
-    } else {
-        formReserva.style.display = 'none';
-        msgLogin.style.display = 'block';
-    }
+    
+    formRegistroReserva.style.display = isLoggedIn ? 'block' : 'none';
+    msgLoginReserva.style.display = isLoggedIn ? 'none' : 'block';
+    msgErroReserva.textContent = ''; 
 
     openModal(modalReserva);
 }
@@ -152,7 +153,6 @@ function temConflitoDeReserva(idImovel, checkInNovo, checkOutNovo) {
         const checkInExistente = new Date(reserva.dataCheckIn + 'T00:00:00');
         const checkOutExistente = new Date(reserva.dataCheckOut + 'T00:00:00');
         
-        // As datas de entrada/saída já foram transformadas em Date objects na função registrarReserva
         if ((checkInNovo < checkOutExistente) && (checkOutNovo > checkInExistente)) {
             return true;
         }
@@ -162,33 +162,33 @@ function temConflitoDeReserva(idImovel, checkInNovo, checkOutNovo) {
 
 function registrarReserva(event) {
     event.preventDefault();
-    const checkinVal = document.getElementById('reserva-data-checkin').value;
-    const checkoutVal = document.getElementById('reserva-data-checkout').value;
+    
+    
+    const checkinVal = inputCheckIn.value;
+    const checkoutVal = inputCheckOut.value;
     const imovel = DADOS_IMOVEIS.find(i => i.id === imovelSelecionadoId);
-    const msgErro = document.getElementById('msg-erro-reserva');
 
     if(!checkinVal || !checkoutVal) {
-        msgErro.textContent = "Preencha as datas.";
+        msgErroReserva.textContent = "Preencha as datas.";
         return;
     }
 
-    // Criando datas com 'T00:00:00' para garantir que sejam tratadas como dia inteiro
     const dataCheckIn = new Date(checkinVal + 'T00:00:00');
     const dataCheckOut = new Date(checkoutVal + 'T00:00:00');
     const hoje = new Date();
     hoje.setHours(0,0,0,0);
 
     if (dataCheckIn < hoje) {
-        msgErro.textContent = 'A data de check-in não pode ser no passado.';
+        msgErroReserva.textContent = 'A data de check-in não pode ser no passado.';
         return;
     }
     if (dataCheckIn >= dataCheckOut) {
-        msgErro.textContent = 'O check-out deve ser após o check-in.';
+        msgErroReserva.textContent = 'O check-out deve ser após o check-in.';
         return;
     }
 
     if (temConflitoDeReserva(imovelSelecionadoId, dataCheckIn, dataCheckOut)) {
-        msgErro.textContent = 'Indisponível nestas datas.';
+        msgErroReserva.textContent = 'Indisponível nestas datas.';
         return;
     }
 
@@ -208,10 +208,12 @@ function registrarReserva(event) {
     DADOS_RESERVAS.push(novaReserva);
     
     closeModal(modalReserva);
-    alert(`Reserva Confirmada!\n${imovel.titulo}\nTotal: R$${valorTotal.toFixed(2)}`);
+    alert(`Reserva Confirmada!\n${imovel.titulo}\nTotal: R$${valorTotal}`);
     
-    document.getElementById('form-registro-reserva').reset();
+    formRegistroReserva.reset();
 }
+
+
 
 function deletarReserva(id) {
     if (confirm('Cancelar esta reserva?')) {
@@ -234,7 +236,7 @@ function visualizarReservas() {
             item.innerHTML = `
                 <h4 style="margin-bottom:5px;">${reserva.titulo}</h4>
                 <p style="font-size:0.9em; color:#555;">${reserva.dataCheckIn} até ${reserva.dataCheckOut}</p>
-                <p style="font-weight:bold; margin: 5px 0;">Total: R$${reserva.valorTotal.toFixed(2)}</p>
+                <p style="font-weight:bold; margin: 5px 0;">Total: R$${reserva.valorTotal}</p>
                 <button class="btn-delete-reserva" onclick="deletarReserva(${reserva.id})">Cancelar</button>
             `;
             listaReservas.appendChild(item);
@@ -242,6 +244,7 @@ function visualizarReservas() {
     }
     openModal(modalVisualizarReservas);
 }
+
 
 function handleBusca(event) {
     event.preventDefault();
@@ -253,22 +256,24 @@ function handleBusca(event) {
     renderImoveis(filtrados);
 }
 
-// --- EVENTOS ---
+
 document.addEventListener('DOMContentLoaded', () => {
     renderImoveis(DADOS_IMOVEIS);
+
+    
+    updateUIForLoginState(); 
 
     btnMenu.addEventListener('click', () => {
         if (!isLoggedIn) {
             openModal(modalLogin);
         } else {
-            // Se estiver logado, abre a opção de sair (Simplificado)
             if(confirm('Você está logado. Deseja abrir o menu de Login/Sair?')) openModal(modalLogin);
         }
     });
 
-    formBusca.addEventListener('submit', handleBusca);
+    formLogin.addEventListener('submit', handleLogin);
     btnLogout.addEventListener('click', handleLogout);
-    document.getElementById('form-registro-reserva').addEventListener('submit', registrarReserva);
-    btnBuscar.addEventListener('click', handleBusca);
+    formRegistroReserva.addEventListener('submit', registrarReserva);
+    formBusca.addEventListener('submit', handleBusca); 
     btnReservasCadastradas.addEventListener('click', visualizarReservas);
 });
