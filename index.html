@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="assets/sb-favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <title>StayBook | Seu Espaço, Sua Agenda, Seu Jeito</title>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img class="sb-icon" src="assets/sb-icon.jpg"Logo do Staybook">
+            <span>Stay<span class="logo-accent">Book</span></span>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" id="input-localizacao" placeholder="Qualquer lugar">
+            <button id="btn-buscar">Buscar</button>
+        </div>
+
+        <div class="user-menu-container">
+            <button id="btn-reservas-cadastradas" class="btn-reservas">Minhas Reservas</button>
+            <button id="btn-menu-hamburguer" class="menu-hamburguer">
+                <span class="icon-line"></span>
+                <span class="icon-line"></span>
+                <span class="icon-line"></span>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section id="imoveis-grid" class="imoveis-grid">
+        </section>
+    </main>
+
+    <div id="modal-login" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Entrar ou Cadastrar-se</h2>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">Simulação: Use <b>admin</b> / <b>admin</b></p>
+            <form id="form-login">
+                <input type="text" id="login-usuario" placeholder="Usuário" required>
+                <input type="password" id="login-senha" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <button id="btn-logout" class="btn-logout" style="display:none;">Sair da conta</button>
+        </div>
+    </div>
+
+    <div id="modal-reserva" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="reserva-titulo">Detalhes do Imóvel</h2>
+            <div id="reserva-detalhes"></div>
+            
+            <form id="form-registro-reserva" class="form-reserva" style="display:none;">
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                <h3>Registrar Reserva</h3>
+                <label for="reserva-data-checkin">Check-in:</label>
+                <input type="date" id="reserva-data-checkin" required>
+                
+                <label for="reserva-data-checkout">Check-out:</label>
+                <input type="date" id="reserva-data-checkout" required>
+                
+                <button type="submit" id="btn-confirmar-reserva">Confirmar Reserva</button>
+                <p id="msg-erro-reserva" class="msg-erro" style="color: red; margin-top: 10px;"></p>
+            </form>
+            
+            <div id="msg-login-reserva" style="text-align: center; margin-top: 20px;">
+                <p>Gostou deste lugar?</p>
+                <button onclick="irParaLogin()">Faça Login para Reservar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-visualizar-reservas" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Minhas Reservas</h2>
+            <div id="lista-reservas"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
