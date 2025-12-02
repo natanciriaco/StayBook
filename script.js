@@ -28,6 +28,7 @@ const formLogin = document.getElementById('form-login');
 const btnLogout = document.getElementById('btn-logout');
 const btnMenu = document.getElementById('btn-menu-hamburguer');
 const btnReservasCadastradas = document.getElementById('btn-reservas-cadastradas');
+const formBusca = document.getElementById('form-busca');
 const btnBuscar = document.getElementById('btn-buscar');
 
 let imovelSelecionadoId = null;
@@ -242,7 +243,8 @@ function visualizarReservas() {
     openModal(modalVisualizarReservas);
 }
 
-function handleBusca() {
+function handleBusca(event) {
+    event.preventDefault();
     const termo = document.getElementById('input-localizacao').value.toLowerCase();
     const filtrados = DADOS_IMOVEIS.filter(imovel => 
         imovel.localizacao.toLowerCase().includes(termo) ||
@@ -264,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    formLogin.addEventListener('submit', handleLogin);
+    formBusca.addEventListener('submit', handleBusca);
     btnLogout.addEventListener('click', handleLogout);
     document.getElementById('form-registro-reserva').addEventListener('submit', registrarReserva);
     btnBuscar.addEventListener('click', handleBusca);
